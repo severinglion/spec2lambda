@@ -1,0 +1,42 @@
+{
+  "name": "spec2lambda",
+  "version": "1.0.0",
+  "description": "A TypeScript template for building spec-driven AWS Lambda APIs using OpenAPI, code generation, modular handlers, and a local dev server.",
+  "main": "index.js",
+  "scripts": {
+    "codegen": "",
+    "codegen:types": "openapi-typescript ./docs/openapi.yml -o ./src/generated/openapi.types.ts",
+    "codegen:zod": "orval --config ./src/scripts/orval.config.ts",
+    "codegen:routes": "node src/scripts/generate-router-config.cjs",
+    "test": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/severinglion/spec2lambda.git"
+  },
+  "keywords": [],
+  "author": "Joshua Bunt",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/severinglion/spec2lambda/issues"
+  },
+  "homepage": "https://github.com/severinglion/spec2lambda#readme",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.159",
+    "@types/express": "^5.0.5",
+    "@types/node": "^24.10.1",
+    "body-parser": "^2.2.0",
+    "eslint": "^9.39.1",
+    "express": "^5.1.0",
+    "js-yaml": "^4.1.1",
+    "openapi-typescript": "^7.10.1",
+    "orval": "^8.0.0-rc.2",
+    "path-to-regexp": "^8.3.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4",
+    "zod": "^4.1.12"
+  }
+}
