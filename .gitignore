@@ -3,3 +3,29 @@ src/generated/
 .vscode/
 .env
 .env.local 
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts
+dist/
+build/
+coverage/
+
+# Test output
+*.lcov
+
+# IDE/editor files
+.idea/
+.history/
+
+# Misc
+*.tgz
+*.swp
+*.swo
