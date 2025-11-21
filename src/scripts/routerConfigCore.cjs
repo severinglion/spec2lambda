@@ -1,4 +1,4 @@
-import yaml from "yaml";
+const yaml = require("yaml");
 const pathToRegexpModule = require("path-to-regexp");
 const pathToRegexp =
   typeof pathToRegexpModule === "function"
@@ -84,4 +84,4 @@ function run(inputPath, outputPath, { readFileSync, writeFileSync }) {
   saveRouteConfig(outputPath, routes, writeFileSync);
 }
 
-export { parseSpec, flattenRoutes, saveRouteConfig, run };
+module.exports = { parseSpec, flattenRoutes, saveRouteConfig, run };

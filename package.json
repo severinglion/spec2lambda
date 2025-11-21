@@ -4,11 +4,11 @@
   "description": "A TypeScript template for building spec-driven AWS Lambda APIs using OpenAPI, code generation, modular handlers, and a local dev server.",
   "main": "index.js",
   "scripts": {
-    "codegen": "",
+    "codegen": "npm run codegen:types && npm run codegen:zod && npm run codegen:routes",
     "codegen:types": "openapi-typescript ./docs/openapi.yml -o ./src/generated/openapi.types.ts",
-    "codegen:zod": "orval --config ./src/scripts/orval.config.ts",
+    "codegen:zod": "orval --config orval.config.cjs",
     "codegen:routes": "node src/scripts/generate-router-config.cjs",
-    "test": "vitest"
+    "test": "vitest --run"
   },
   "repository": {
     "type": "git",
