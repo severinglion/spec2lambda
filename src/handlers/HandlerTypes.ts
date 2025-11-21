@@ -4,3 +4,4 @@ import type { HttpResponse } from "../presentation/HttpTypes";
 export interface Handler {
   (event: APIGatewayProxyEventV2): Promise<HttpResponse<any>>;
 }
+
