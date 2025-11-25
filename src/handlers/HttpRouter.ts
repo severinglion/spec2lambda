@@ -61,12 +61,21 @@ export class HttpRouter {
     let body: unknown;
     try {
       body = this.parseBody(event);
-    } catch (err: any) {
-      if (err?.message === "INVALID_JSON_BODY") {
+    } catch (err: unknown) {
+      if (isErrorWithMessage(err) && err.message === "INVALID_JSON_BODY") {
         return toApiGatewayResult(badRequest({ message: "Malformed JSON body" }));
       }
       console.error("Unexpected body parse error", err);
       return toApiGatewayResult(internalError({ message: "Internal Server Error" }));
+    }
+
+    function isErrorWithMessage(e: unknown): e is { message: string } {
+      return (
+        typeof e === "object" &&
+        e !== null &&
+        Object.prototype.hasOwnProperty.call(e, "message") &&
+        typeof (e as Record<string, unknown>).message === "string"
+      );
     }
 
     const pathParams = this.extractPathParams(rawPath, route.rawPath);

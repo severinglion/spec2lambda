@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 const { run } = require("./routerConfigCore.cjs");
 
-const specPath = path.join(__dirname, "..", "..", "docs", "openapi.yml");
+const specPath = path.join(__dirname, "..", "..", "api", "openapi.yml");
 const outPath = path.join(__dirname, "..", "generated", "routerConfig.ts");
 
 fs.mkdirSync(path.dirname(outPath), { recursive: true });

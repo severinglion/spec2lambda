@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach } from "vitest";
 import * as example from "../../../src/handlers/example";
 import type { APIGatewayProxyEventV2 } from "aws-lambda";
@@ -80,7 +81,8 @@ describe("example.ts handlers", () => {
       const createRes = await example.createUser(
         makeEvent({ body: JSON.stringify({ name: "Eve", email: "eve@example.com" }) })
       );
-      const userId = createRes.body.id;
+      const user = createRes.body as { id: string; name: string; email: string };
+      const userId = user.id;
       // Get user
       const getRes = await example.getUser(
         makeEvent({ pathParameters: { userId } })

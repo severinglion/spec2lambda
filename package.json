@@ -5,12 +5,13 @@
   "main": "index.js",
   "scripts": {
     "codegen": "npm run codegen:types && npm run codegen:zod && npm run codegen:routes",
-    "codegen:types": "openapi-typescript ./docs/openapi.yml -o ./src/generated/openapi.types.ts",
+    "codegen:types": "openapi-typescript ./api/openapi.yml -o ./src/generated/openapi.types.ts",
     "codegen:zod": "orval --config orval.config.cjs",
     "codegen:routes": "node src/scripts/generate-router-config.cjs",
     "test": "vitest --run",
     "typecheck": "tsc --noEmit",
-    "build": "tsup"
+    "build": "tsup",
+    "lint": "eslint . --ext .ts,.js,.cjs,.mjs"
   },
   "repository": {
     "type": "git",
@@ -24,13 +25,18 @@
   },
   "homepage": "https://github.com/severinglion/spec2lambda#readme",
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@types/aws-lambda": "^8.10.159",
     "@types/express": "^5.0.5",
     "@types/node": "^24.10.1",
     "@types/swagger-ui-express": "^4.1.8",
+    "@typescript-eslint/eslint-plugin": "^8.48.0",
+    "@typescript-eslint/parser": "^8.48.0",
     "body-parser": "^2.2.0",
     "eslint": "^9.39.1",
     "express": "^5.1.0",
+    "globals": "^16.5.0",
+    "jiti": "^2.6.1",
     "js-yaml": "^4.1.1",
     "openapi-typescript": "^7.10.1",
     "orval": "^8.0.0-rc.2",
@@ -40,6 +46,7 @@
     "ts-node-dev": "^2.0.0",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.48.0",
     "vitest": "^3.2.4",
     "zod": "^4.1.12"
   }

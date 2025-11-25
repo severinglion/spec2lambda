@@ -2,7 +2,6 @@ import express, {
   type Express,
   type Request,
   type Response,
-  type NextFunction
 } from "express";
 import swaggerUi from "swagger-ui-express";
 import fs from "node:fs";
@@ -11,8 +10,6 @@ import yaml from "yaml";
 import { fileURLToPath } from "node:url";
 import type {
   APIGatewayProxyEventV2,
-  Context,
-  APIGatewayProxyResultV2
 } from "aws-lambda";
 import { handler as lambdaHandler } from "../src/handlers/HttpRouter.js";
 
@@ -105,25 +102,9 @@ function toApiGatewayEvent(req: Request): APIGatewayProxyEventV2 {
   };
 }
 console.log('Setting up route handler...');
-app.use(async (req: Request, res: Response, _next: NextFunction) => {
+app.use(async (req: Request, res: Response) => {
   try {
     const event = toApiGatewayEvent(req);
-
-    // Minimal dummy context for local dev
-    const context: Context = {
-      callbackWaitsForEmptyEventLoop: false,
-      functionName: "local-dev-handler",
-      functionVersion: "$LATEST",
-      invokedFunctionArn: "arn:aws:lambda:local:000000000000:function:local-dev-handler",
-      memoryLimitInMB: "128",
-      awsRequestId: "local-dev-request",
-      logGroupName: "/aws/lambda/local-dev-handler",
-      logStreamName: "local",
-      getRemainingTimeInMillis: () => 30000,
-      done: () => { },
-      fail: () => { },
-      succeed: () => { }
-    };
 
     const lambdaResult = await lambdaHandler(
       event,

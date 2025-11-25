@@ -1,7 +1,7 @@
 
 
 import type { Handler } from "./HandlerTypes";
-import type { components, operations } from "../generated/openapi.types";
+import type { components } from "../generated/openapi.types";
 import { ok, created, notFound, badRequest } from "../presentation/Responses";
 import * as schemas from "../generated/schemas.zod";
 
@@ -32,6 +32,7 @@ export const createUser: Handler = async (event) => {
     users.set(id, user);
     return created(user);
   } catch (err) {
+    console.error("Error creating user", err);
     return badRequest({ message: "Invalid JSON body" });
   }
 };
