@@ -2,7 +2,7 @@
 module.exports = {
   accountService: {
     input: {
-      target: "./docs/openapi.yml",
+      target: "./api/openapi.yml",
     },
     output: {
       // we only care about Zod schemas; no HTTP client needed server-side
