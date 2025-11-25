@@ -23,3 +23,14 @@ spec2lambda generate [--config <path>]
 - Groups handler stubs by resource (e.g., all user operations in `src/handlers/users.ts`).
 - Ensures all operationIds are stubbed and wired into the framework.
 - Never modifies user-implemented logic in existing handler functions.
+
+
+## CLI Stub Implementation (v1)
+
+The CLI currently supports the following commands as stubs:
+
+- `init <project-name>`: Prints a placeholder message for project initialization.
+- `generate`: Prints a placeholder message for code generation.
+- `--help`/`-h`: Shows usage information.
+
+These commands do not yet perform real work, but provide a foundation for future development. Use `npm run cli -- <command>` for local development.
