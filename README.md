@@ -1,223 +1,159 @@
+
 # spec2lambda
-A TypeScript template for building spec-driven AWS Lambda APIs using OpenAPI, code generation, modular handlers, and a local dev server.
+A TypeScript template and generator for building spec-driven AWS Lambda APIs using OpenAPI, code generation, grouped handler stubs, and a local dev server.
 
-## File Structure
-- `docs/`: Documentation files.
-- `src/`: Source code for the Lambda functions and API handlers.
-  - `scripts/`: Utility scripts for code generation and deployment.
-  - `handlers/`: Modular Lambda function handlers.
-  - `presentation/`: API request/response abstractions and adapters (Lambda, dev server).
-  - `domain/`: Business logic and core functionality.
-  - `infra/`: Infrastructure-related code (e.g., AWS SDK interactions).
-  - `generated/`: Auto-generated code from OpenAPI specs. **Do not edit manually.**
-- `tests/`: Unit and integration tests.
-- `local-dev/`: Local development server setup and entrypoint.
+
+## Project Structure
+- `api/` — Your OpenAPI spec (`openapi.yml`). User-owned. Edit freely.
+- `src/generated/` — All code generated from the spec (types, schemas, router config). **Generated. Always overwritten. Never edit directly.**
+- `src/handlers/` — Grouped Lambda handler implementations (e.g., `users.ts` for all user operations). User-owned, but stubs are generated as needed.
+- `src/presentation/` — Adapters, response helpers, and HTTP presentation logic. User-owned.
+- `tests/` — Unit and integration tests. User-owned.
+- `local-dev/` — Local development server setup and entrypoint.
+
+See [`docs/project-structure.md`](./docs/project-structure.md) for details.
+
+---
+
+
+## Philosophy & Goals
+- **Spec-first**: The OpenAPI document is the single source of truth for routes, types, and contracts.
+- **Type-safe**: Request/response types and schemas are generated from the spec and used everywhere.
+- **Separation of concerns**: Presentation (HTTP/Lambda), business logic, and infrastructure are clearly separated.
+- **Repeatable pattern**: Adding a new endpoint is always spec → generate → implement handler.
 
 ---
 
-## Goals
-
-- **Spec-first**: The OpenAPI document is the single source of truth for routes, DTOs, and contracts.
-- **Type-safe**: Request/response types are generated from the spec and used everywhere.
-- **Separation of concerns**:
-  - `presentation` = HTTP/Lambda/dev-server concerns
-  - `domain` = business rules
-  - `infra` = external systems (DBs, queues, APIs)
-- **Repeatable pattern**: Adding a new endpoint should follow the same predictable steps.
-
----
 
 ## Tech Stack
-
 - **Runtime**: Node.js on AWS Lambda (HTTP API / API Gateway v2 events)
 - **Language**: TypeScript
 - **Spec**: OpenAPI (YAML)
-- **Codegen**:
-  - `openapi-typescript` (or similar) for DTOs
-  - Custom scripts in `src/scripts/` for route config / helper generation
-- **Local Dev**: Express/Fastify-based dev server that uses the same handler interfaces as Lambda
+- **Codegen**: Built-in CLI (`spec2lambda generate`) for types, schemas, router config, and handler stubs
+- **Local Dev**: Express-based dev server using the same handler interfaces as Lambda
 
 ---
+
 
 ## OpenAPI Spec & Code Generation
-
-- **Spec location**: `docs/openapi.yml` 
+- **Spec location**: `api/openapi.yml`
 - **operationId rules**:
   - Each operation **must** have a unique `operationId`.
-  - `operationId` is used as the key for:
-    - handler file naming
-    - handler registry mapping
-    - route config entries
+  - `operationId` is used as the key for handler grouping and wiring.
 
 ### Codegen Overview
+Running `spec2lambda generate` produces:
+- `src/generated/openapi.types.ts` — TypeScript types for paths, request bodies, parameters, and responses.
+- `src/generated/schemas.zod.ts` — Zod schemas for validation.
+- `src/generated/routerConfig.ts` — Route config mapping operationId to method/path/regex.
+- Grouped handler stubs in `src/handlers/` (e.g., all user operations in `users.ts`).
 
-Code generation produces:
-
-- `src/generated/types.ts`  
-  TypeScript types for paths, request bodies, parameters, and responses.
-- `src/generated/routes.ts`  
-  A route config mapping `operationId → { method, path, pathMatcher, extractParams }`.
-- (Optionally) handler stubs under `src/handlers/` for any operations that don’t have implementations yet.
-
-> **Important (for humans & coding agents):**  
-> - Never manually edit files in `src/generated/`.  
-> - If types or routes are wrong, fix `openapi/api.yaml` and re-run codegen.
+> **Important:**
+> - Never manually edit files in `src/generated/`.
+> - If types or routes are wrong, fix `api/openapi.yml` and re-run codegen.
 
 ---
 
-## Scripts & Commands
 
-> These names are suggestions; keep them in sync with `package.json`.
+## CLI Commands
 
-- `npm run codegen`  
-  Runs all code generation scripts (DTOs, routes, etc.).
-- `npm run codegen:types`  
-  Generates TypeScript types from the OpenAPI spec.
-- `npm run codegen:zod`  
-  Generates Zod schemas from the OpenAPI spec.
-- `npm run codegen:routes`  
-  Generates the route configuration from `operationId` and paths.
-- `npm run dev`  
-  Starts the local dev server (Express/Fastify) using generated routes and handlers.
-- `npm test`  
-  Runs unit and integration tests.
-- `npm run build`  
-  Compiles TypeScript to JavaScript for deployment.
+See [`docs/commands.md`](./docs/commands.md) for full details.
+
+- `spec2lambda init <project-name>` — Scaffold a new project and set the name. Sets up the directory structure, initial OpenAPI spec, and HTTP presentation layer (adapters for Lambda HTTP API Gateway responses).
+- `spec2lambda generate [--config <path>]` — Parse the OpenAPI spec, generate types, schemas, router config, and grouped handler stubs. Use `--config` to override default settings.
 
 ---
 
-## Adding a New Endpoint (Happy Path)
 
-> This is the most important workflow for coding agents.
-
-1. **Update the OpenAPI spec**
-   - Edit `openapi/api.yaml`.
-   - Add a new path + method.
-   - Set a unique `operationId` (e.g., `createUser`, `listParticipants`).
-   - Define parameters, request body schema, and response schemas.
-
-2. **Regenerate code**
-   - Run: `npm run codegen`
-   - This updates:
-     - `src/generated/types.ts`
-     - `src/generated/routes.ts`
-     - (Optionally) handler stubs, if configured
-
-3. **Implement the handler**
-   - Create or edit `src/handlers/<operationId>.ts`.
-   - Import the generated request/response types.
-   - Implement the handler using the domain/services layer.
-   - Export the handler and register it in `src/handlers/index.ts` if needed.
-
-4. **Wire up domain & infra**
-   - Add or update services in `src/domain/` (pure business logic).
-   - Add or update infrastructure in `src/infra/` (e.g., DynamoDB repositories).
-
-5. **Test locally**
-   - Run `npm run dev`.
-   - Call the endpoint using the route defined in the OpenAPI spec.
-   - Add tests in `tests/` as needed.
+## Typical Workflow
+1. **Initialize the project**
+  - Run: `spec2lambda init <project-name>`
+  - Sets up the directory structure, initial OpenAPI spec, and HTTP adapters.
+2. **Edit the OpenAPI spec**
+  - Edit `api/openapi.yml` to add or update endpoints.
+  - Set a unique `operationId` for each operation.
+3. **Generate code**
+  - Run: `spec2lambda generate [--config <path>]`
+  - Updates all generated types, schemas, router config, and handler stubs (grouped by resource, e.g., `users.ts`).
+4. **Implement business logic**
+  - Fill in handler stubs in `src/handlers/`.
+  - Use adapters and responses from `src/presentation/`.
+5. **Test and iterate**
+  - Add or update tests in `tests/`.
+  - Use the local dev server for manual testing.
 
 ---
+
 
 ## Architecture Overview
 
+See [`docs/project-structure.md`](./docs/project-structure.md) for directory roles and regeneration safety.
+
 ### Presentation Layer (`src/presentation/`)
-
-Responsibilities:
-
-- Adapting **AWS Lambda events** to the internal `HttpRequest` abstraction.
-- Adapting **local dev server requests** to the same abstraction.
-- Converting `HttpResponse` objects back to:
-  - Lambda `APIGatewayProxyResultV2`
-  - Express/Fastify responses
-- Mapping errors to consistent HTTP responses.
+- Adapts AWS Lambda events and local dev server requests to a common abstraction.
+- Converts internal responses to Lambda/Express responses.
+- Provides adapters and helpers for consistent HTTP output.
 
 ### Domain Layer (`src/domain/`)
-
-Responsibilities:
-
 - Core business logic and use cases.
-- Pure-ish functions where possible.
+- Pure functions where possible.
 - No direct knowledge of HTTP, Lambda, or AWS-specific APIs.
-- Consumes interfaces from `infra/` (e.g., repositories, gateway interfaces).
 
-### Infra Layer (`src/infra/`)
-
-Responsibilities:
-
-- Implementation of repositories and clients (DynamoDB, RDS, S3, external APIs, etc.).
-- Configuration loading (env vars).
-- Wiring services together (optionally via simple factories or DI).
+### (Optional) Infra Layer (`src/infra/`)
+- Implementation of repositories and clients (e.g., DynamoDB, S3, external APIs).
+- Configuration loading and service wiring.
 
 ---
 
-## Local Development
 
-- Entry point: `local-dev/dev-server.ts` (or similar).
-- Uses the generated `routeConfig` to register routes.
+## Local Development
+- Entry point: `local-dev/dev-server.ts`.
+- Uses the generated router config and grouped handlers.
 - Uses the same handler functions as Lambda.
-- Ideal workflow:
-  - Run `npm run codegen`.
-  - Run `npm run dev`.
+- Typical workflow:
+  - Run `spec2lambda generate` after editing the spec.
+  - Start the dev server (see future CLI support).
   - Hit `http://localhost:<PORT>/<your-path>` using a tool like Postman or curl.
 
 ---
 
-## Testing
 
+## Testing
 - Place tests under `tests/`.
 - Suggested patterns:
   - **Unit tests** for domain logic (`src/domain/`).
   - **Integration tests** for handlers:
-    - Invoke handlers directly with fake `HttpRequest` objects, or
+    - Invoke handlers directly with fake events, or
     - Use the dev server and make HTTP calls.
-- Keep tests decoupled from actual AWS services by using:
-  - Mocks for infra repositories.
-  - Local test doubles for external APIs.
+- Keep tests decoupled from actual AWS services by using mocks or local test doubles.
 
 ---
+
 
 ## Guidelines for Coding Agents
-
-> This section is explicitly for tools like ChatGPT, Copilot, Cody, etc.
-
-When modifying this repo:
+> This section is for tools like ChatGPT, Copilot, Cody, etc.
 
 1. **Do not edit generated files**
-   - Never modify anything under `src/generated/` directly.
-   - Instead, change the OpenAPI spec (`openapi/api.yaml`) and run `npm run codegen`.
-
+  - Never modify anything under `src/generated/` directly.
+  - Instead, change the OpenAPI spec (`api/openapi.yml`) and run `spec2lambda generate`.
 2. **Follow the layering rules**
-   - HTTP/Lambda-specific logic belongs in `src/presentation/`.
-   - Business logic belongs in `src/domain/`.
-   - AWS SDK and external system calls belong in `src/infra/`.
-
+  - HTTP/Lambda-specific logic: `src/presentation/`
+  - Business logic: `src/domain/`
+  - (Optional) AWS SDK/external system calls: `src/infra/`
 3. **When adding endpoints**
-   - Always add/modify the OpenAPI spec first.
-   - Use `operationId` as the source of truth for handler names and mapping keys.
-   - Keep handler filenames and exports aligned with `operationId`.
-
+  - Always update the OpenAPI spec first.
+  - Use `operationId` as the source of truth for handler grouping and mapping.
+  - Handlers are grouped by resource (e.g., all user operations in `users.ts`).
 4. **Type usage**
-   - Prefer using generated request/response types over custom ones.
-   - If types are missing or incorrect:
-     - Update the spec.
-     - Re-run codegen.
-     - Then refactor call sites to use the correct types.
-
+  - Prefer using generated request/response types over custom ones.
+  - If types are missing or incorrect, update the spec and re-run codegen.
 5. **Safe places to refactor**
-   - `src/handlers/`: handler composition, mapping to domain services.
-   - `src/domain/`: pure business logic refactors.
-   - `src/infra/`: implementation details of repositories/clients.
-   - `tests/`: adding or updating tests.
-
+  - `src/handlers/`, `src/domain/`, `tests/`.
 6. **Avoid breaking changes**
-   - Do not change public handler signatures or contract types without updating:
-     - The OpenAPI spec.
-     - Related clients/tests.
+  - Do not change public handler signatures or contract types without updating the OpenAPI spec and related tests.
 
 ---
 
-## License
 
+## License
 MIT – see `LICENSE` for details.

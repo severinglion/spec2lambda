@@ -113,7 +113,6 @@ describe('routerConfigCore.cjs', () => {
       const routes = [
         { method: 'GET', rawPath: '/foo', pathRegex: /^\/foo$/, operationId: 'getFoo' }
       ];
-      const expectedTs = expect.stringContaining('export const routes: RouteConfig[]');
       const mockWrite = vi.fn();
       routerConfigCore.saveRouteConfig('fake/output.ts', routes, mockWrite);
       expect(mockWrite).toHaveBeenCalledWith('fake/output.ts', expect.any(String));
