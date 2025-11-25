@@ -8,7 +8,9 @@
     "codegen:types": "openapi-typescript ./docs/openapi.yml -o ./src/generated/openapi.types.ts",
     "codegen:zod": "orval --config orval.config.cjs",
     "codegen:routes": "node src/scripts/generate-router-config.cjs",
-    "test": "vitest --run"
+    "test": "vitest --run",
+    "typecheck": "tsc --noEmit",
+    "build": "tsup"
   },
   "repository": {
     "type": "git",
