@@ -31,6 +31,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Generate code
+        run: npm run codegen
+
       - name: Type check
         run: npm run typecheck
 
