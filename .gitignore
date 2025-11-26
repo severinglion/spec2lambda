@@ -29,3 +29,7 @@ coverage/
 *.tgz
 *.swp
 *.swo
+
+
+# Test output
+test-project/
