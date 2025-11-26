@@ -1,15 +1,24 @@
 # CLI Overview
 The `spec2lambda` CLI is the entry point for building, evolving, and maintaining spec-driven AWS Lambda APIs. It unifies code generation, local development, and project scaffolding into a single, repeatable workflow.
 
-## CLI Stub Implementation (v1)
 
-The CLI currently supports the following commands as stubs:
+## CLI Commands (v1)
 
-- `init <project-name>`: Prints a placeholder message for project initialization.
-- `generate`: Prints a placeholder message for code generation.
-- `--help`/`-h`: Shows usage information.
+### Usage
 
-These commands do not yet perform real work, but provide a foundation for future development. Use `npm run cli -- <command>` for local development.
+```sh
+spec2lambda init <project-name>
+spec2lambda create-lambda-function <project-name> # alias for init
+spec2lambda generate --config spec2lambda.config.mts
+```
+
+### Commands
+
+- `init` / `create-lambda-function` - Scaffold a new Lambda service project
+- `generate` - Run codegen based on the OpenAPI spec *(currently stubbed, not implemented)*
+- `--help`/`-h` - Shows usage information
+
+These commands provide a foundation for future development. Use `npm run cli -- <command>` for local development.
 
 ## Philosophy: Template + Generator
 - **Template**: Provides a ready-to-extend TypeScript service structure, with clear boundaries between user code and generated artifacts.
