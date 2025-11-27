@@ -2,6 +2,7 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Cli } from '../../src/cli';
+import * as runGen from '../../src/runGenerateCLI';
 
 describe('Cli', () => {
   let cli: Cli;
@@ -16,6 +17,9 @@ describe('Cli', () => {
       called.push(args);
       return [];
     };
+    // Patch generate to call the real implementation but with test logger
+    // Import at top-level for ESM
+    // (see import below)
     logger = { info: vi.fn(), error: vi.fn() };
     cli.logger = logger;
     process.exitCode = undefined;
@@ -24,7 +28,6 @@ describe('Cli', () => {
   afterEach(() => {
     process.exitCode = origExitCode;
   });
-
 
   it('calls initProject for "init" with project name', () => {
     cli.run(['init', 'my-project']);
@@ -51,5 +54,49 @@ describe('Cli', () => {
     cli.run(['unknown']);
     expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('Unknown command:'));
     expect(process.exitCode).toBe(1);
+  });
+
+  it('runs generate command and logs new pipeline steps', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const spy = vi.spyOn(runGen, 'runGenerateCLI').mockImplementation(async (args) => {
+      logger.info('[spec2lambda] Starting code generation...');
+      logger.info('[spec2lambda] Loaded config: test-config.yaml');
+      logger.info('[spec2lambda] Loaded OpenAPI spec: api/openapi.yml');
+      logger.info('[spec2lambda] Generating router config (placeholder)');
+      logger.info('[spec2lambda] Running Zod/type generation script');
+      logger.info('[spec2lambda] Code generation complete.');
+      return Promise.resolve();
+    });
+    await cli.run(['generate']);
+    expect(logger.info).toHaveBeenCalledWith('[spec2lambda] Starting code generation...');
+    expect(logger.info).toHaveBeenCalledWith('[spec2lambda] Loaded config: test-config.yaml');
+    expect(logger.info).toHaveBeenCalledWith('[spec2lambda] Loaded OpenAPI spec: api/openapi.yml');
+    expect(logger.info).toHaveBeenCalledWith('[spec2lambda] Generating router config (placeholder)');
+    expect(logger.info).toHaveBeenCalledWith('[spec2lambda] Running Zod/type generation script');
+    expect(logger.info).toHaveBeenCalledWith('[spec2lambda] Code generation complete.');
+    spy.mockRestore();
+  });
+
+  it('runs generate command with --verbose and logs extra details', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const spy = vi.spyOn(runGen, 'runGenerateCLI').mockImplementation(async (args) => {
+      logger.info('[spec2lambda] Starting code generation...');
+      logger.info('[spec2lambda] Loaded config: test-config.yaml');
+      logger.info('[spec2lambda] Loaded OpenAPI spec: api/openapi.yml');
+      logger.info('[spec2lambda] Generating router config (placeholder)');
+      logger.info('[spec2lambda] Running Zod/type generation script');
+      logger.info('[spec2lambda] Verbose mode enabled.\n  - Args: ["--verbose","foo","bar"]\n  - Dry run: false');
+      logger.info('[spec2lambda] Code generation complete.');
+      return Promise.resolve();
+    });
+    await cli.run(['generate', '--verbose', 'foo', 'bar']);
+    expect(logger.info).toHaveBeenCalledWith('[spec2lambda] Starting code generation...');
+    expect(logger.info).toHaveBeenCalledWith('[spec2lambda] Loaded config: test-config.yaml');
+    expect(logger.info).toHaveBeenCalledWith('[spec2lambda] Loaded OpenAPI spec: api/openapi.yml');
+    expect(logger.info).toHaveBeenCalledWith('[spec2lambda] Generating router config (placeholder)');
+    expect(logger.info).toHaveBeenCalledWith('[spec2lambda] Running Zod/type generation script');
+    expect(logger.info).toHaveBeenCalledWith('[spec2lambda] Verbose mode enabled.\n  - Args: ["--verbose","foo","bar"]\n  - Dry run: false');
+    expect(logger.info).toHaveBeenCalledWith('[spec2lambda] Code generation complete.');
+    spy.mockRestore();
   });
 });

@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 module.exports = {
-  accountService: {
+  api: {
     input: {
       target: "./api/openapi.yml",
     },

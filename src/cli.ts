@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { initProject, defaultManifest } from "./scripts/initProject";
+import { runGenerateCLI } from "./runGenerateCLI";
 import * as fs from "fs";
 
 
@@ -7,6 +8,7 @@ export class Cli {
   // Handlers can be overridden for testing
   initProject = initProject;
   manifest = defaultManifest;
+  // generate = generate; // Not used directly anymore
   // Adapter to match the expected fs interface
   fs = {
     existsSync: fs.existsSync,
@@ -40,16 +42,21 @@ export class Cli {
         }
         break;
       }
-      case "generate":
-        this.logger.info("[spec2lambda] TODO: implement code generation");
+      case "generate": {
+        // Use the new runGenerateCLI for dependency-injected, robust codegen
+        runGenerateCLI(args).catch((err) => {
+          this.logger.error("[spec2lambda] Code generation failed:", err);
+          process.exitCode = 1;
+        });
         break;
+      }
       case "--help":
       case "-h":
-        this.logger.info(`spec2lambda - CLI\n\nUsage:\n  spec2lambda init <project-name>\n  spec2lambda generate --config spec2lambda.config.mts\n\nCommands:\n  init         Scaffold a new Lambda service\n  generate     Run codegen based on the OpenAPI spec\n\nNote:\n  The existing local-dev server is still used separately (e.g., npm run dev).\n`);
+        this.logger.info(`spec2lambda - CLI\n\nUsage:\n  spec2lambda init <project-name>\n  spec2lambda generate [--config <file>] [--dry-run] [--verbose]\n\nCommands:\n  init         Scaffold a new Lambda service\n  generate     Run codegen based on the OpenAPI spec\n\nOptions for 'generate':\n  --config <file>   Specify config file (YAML/JSON, autodetected if omitted)\n  --dry-run        Show intended file writes and diffs, but do not write files\n  --verbose, -v    Show extra diagnostic output\n\nNote:\n  The existing local-dev server is still used separately (e.g., npm run dev).\n`);
         break;
       default:
         this.logger.info(`Unknown command: ${command}`);
-        this.logger.info(`spec2lambda - CLI\n\nUsage:\n  spec2lambda init <project-name>\n  spec2lambda generate --config spec2lambda.config.mts\n\nCommands:\n  init         Scaffold a new Lambda service\n  generate     Run codegen based on the OpenAPI spec\n\nNote:\n  The existing local-dev server is still used separately (e.g., npm run dev).\n`);
+        this.logger.info(`spec2lambda - CLI\n\nUsage:\n  spec2lambda init <project-name>\n  spec2lambda generate [--config <file>] [--dry-run] [--verbose]\n\nCommands:\n  init         Scaffold a new Lambda service\n  generate     Run codegen based on the OpenAPI spec\n\nOptions for 'generate':\n  --config <file>   Specify config file (YAML/JSON, autodetected if omitted)\n  --dry-run        Show intended file writes and diffs, but do not write files\n  --verbose, -v    Show extra diagnostic output\n\nNote:\n  The existing local-dev server is still used separately (e.g., npm run dev).\n`);
         process.exitCode = 1;
     }
   }
