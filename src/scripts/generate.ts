@@ -1,3 +1,4 @@
+
 // Baseline generate command handler for spec2lambda
 import path from "path";
 
@@ -31,6 +32,10 @@ export async function generate(
 
   // Step 3: Generate Zod schemas and types (via script)
   const zodResult = await generateZodAndTypes({ logger, processRunner }, options);
+
+
+  // Step 3.5: Generate schema map JSON
+  await generateSchemaMap({ fs, logger }, openapi);
 
   // Step 4: Write generated files (or dry-run)
   await writeGeneratedFiles({ fs, logger, diff }, {
@@ -157,6 +162,63 @@ async function generateZodAndTypes(
     logger.error(`[spec2lambda] Script failed: ${err}`);
     throw err;
   }
+}
+// --- Step 3.5: Generate schema map JSON ---
+type GenerateSchemaMapDeps = {
+  fs: any;
+  logger: { info: (msg: string) => void; warn: (msg: string) => void; error: (msg: string) => void };
+};
+
+/**
+ * Generates a JSON mapping of operationId to input/output schema variable names.
+ * This assumes a convention where schemas are named as <operationId>Body, <operationId>Params, <operationId>Response, etc.
+ * Writes to src/generated/schemaMap.generated.json
+ */
+export async function generateSchemaMap({ fs, logger }: GenerateSchemaMapDeps, openapi: any) {
+  if (!openapi || !openapi.paths) {
+    logger.warn('[spec2lambda] No OpenAPI paths found, skipping schema map generation.');
+    return;
+  }
+  const schemaMap: Record<string, { parameters?: string; inputBody?: string; output?: string }> = {};
+  const schemasPath = path.join('src', 'generated', 'schemas.zod.ts');
+  let schemasContent = '';
+  if (fs.existsSync(schemasPath)) {
+    schemasContent = await fs.readFileSync(schemasPath, 'utf8');
+  }
+  for (const pathKey of Object.keys(openapi.paths)) {
+    const pathObj = openapi.paths[pathKey];
+    for (const method of Object.keys(pathObj)) {
+      const op = pathObj[method];
+      if (!op || typeof op !== 'object') continue;
+      const operationId = op.operationId;
+      if (!operationId) continue;
+      // Check for <operationId>Params, <operationId>Body, <operationId>Response in schemas.zod.ts
+      const paramsKey = `${operationId}Params`;
+      const queryParamsKey = `${operationId}QueryParams`;
+      const bodyKey = `${operationId}Body`;
+      const responseKey = `${operationId}Response`;
+      const hasParams = schemasContent.includes(`export const ${paramsKey}`);
+      const hasQueryParams = schemasContent.includes(`export const ${queryParamsKey}`);
+      const hasBody = schemasContent.includes(`export const ${bodyKey}`);
+      const hasResponse = schemasContent.includes(`export const ${responseKey}`);
+      schemaMap[operationId] = {};
+      if (hasParams) schemaMap[operationId].parameters = paramsKey;
+      else if (hasQueryParams) schemaMap[operationId].parameters = queryParamsKey;
+      if (hasBody) schemaMap[operationId].inputBody = bodyKey;
+      if (hasResponse) schemaMap[operationId].output = responseKey;
+    }
+  }
+  if (Object.keys(schemaMap).length === 0) {
+    logger.warn('[spec2lambda] No operationIds found in OpenAPI paths, skipping schema map file write.');
+    return;
+  }
+  const generatedDir = path.join('src', 'generated');
+  if (!(await fs.existsSync(generatedDir))) {
+    await fs.mkdirSync(generatedDir, { recursive: true });
+  }
+  const schemaMapPath = path.join(generatedDir, 'schemaMap.generated.json');
+  await fs.writeFileSync(schemaMapPath, JSON.stringify(schemaMap, null, 2), 'utf8');
+  logger.info(`[spec2lambda] Wrote: ${schemaMapPath}`);
 }
 
 // --- Step 4: Write generated files (or dry-run) ---
