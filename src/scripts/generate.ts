@@ -237,6 +237,9 @@ export async function writeGeneratedFiles(
   }
 
   // For each group, ensure a handler file exists and all stubs are present
+  const createdFiles: string[] = [];
+  const appendedStubs: Array<{ stub: string; file: string }> = [];
+  const skippedStubs: Array<{ stub: string; file: string }> = [];
   for (const tag of Object.keys(groupMap)) {
     const fileName = `${tag.replace(/[^a-zA-Z0-9_]/g, '_')}.ts`;
     const filePath = path.join(handlerDir, fileName);
@@ -252,6 +255,10 @@ export async function writeGeneratedFiles(
     if (!fileContent.startsWith(importLine)) {
       newFileContent = importLine + (newFileContent.startsWith('\n') ? newFileContent.slice(1) : newFileContent);
       addedAny = true;
+      if (!exists) {
+        createdFiles.push(filePath);
+        logger.info(`[spec2lambda] Created handler file: ${filePath}`);
+      }
     }
     for (const op of groupMap[tag]) {
       const stubName = op.operationId;
@@ -261,7 +268,11 @@ export async function writeGeneratedFiles(
       if (!regex.test(fileContent)) {
         newFileContent += (newFileContent && !newFileContent.endsWith('\n') ? '\n' : '') + stubSignature;
         addedAny = true;
-        logger.info(`[spec2lambda] ${exists ? '[update]' : '[create]'} Handler stub for '${stubName}' in ${filePath}`);
+        appendedStubs.push({ stub: stubName, file: filePath });
+        logger.info(`[spec2lambda] Appended handler stub: '${stubName}' in ${filePath}`);
+      } else {
+        skippedStubs.push({ stub: stubName, file: filePath });
+        logger.info(`[spec2lambda] Skipped existing handler stub: '${stubName}' in ${filePath}`);
       }
     }
     if (addedAny) {
@@ -275,4 +286,10 @@ export async function writeGeneratedFiles(
       }
     }
   }
+
+  // Always log a summary
+  logger.info(`[spec2lambda] Handler stub generation summary:`);
+  logger.info(`  Created handler files: ${createdFiles.length}` + (createdFiles.length ? `\n    - ${createdFiles.join('\n    - ')}` : ''));
+  logger.info(`  Appended stubs: ${appendedStubs.length}` + (appendedStubs.length ? `\n    - ${appendedStubs.map(s => `${s.stub} (${s.file})`).join('\n    - ')}` : ''));
+  logger.info(`  Skipped stubs: ${skippedStubs.length}` + (skippedStubs.length ? `\n    - ${skippedStubs.map(s => `${s.stub} (${s.file})`).join('\n    - ')}` : ''));
 }
