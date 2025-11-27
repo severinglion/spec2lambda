@@ -8,6 +8,7 @@
     "codegen": "npm run codegen:types && npm run codegen:zod && npm run codegen:routes",
     "codegen:types": "openapi-typescript ./api/openapi.yml -o ./src/generated/openapi.types.ts",
     "codegen:zod": "orval --config orval.config.cjs",
+    "codegen:contracts": "npm run codegen:types && npm run codegen:zod",
     "codegen:routes": "node src/scripts/generate-router-config.cjs",
     "test": "vitest --run",
     "typecheck": "tsc --noEmit",

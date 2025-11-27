@@ -145,7 +145,7 @@ async function generateZodAndTypes(
 ): Promise<{ stdout: string; stderr: string; code: number }> {
   // Use the correct script name from package.json
   logger.info("[spec2lambda] Running Zod/type generation script");
-  const script = "codegen:zod";
+  const script = "codegen:contracts";
   // Use npm.cmd on Windows for compatibility
   const npmCmd = process.platform === "win32" ? "npm.cmd" : "npm";
   try {
