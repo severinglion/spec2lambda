@@ -3,7 +3,7 @@ import type {
   APIGatewayProxyResultV2
 } from "aws-lambda";
 
-import { routes as defaultRoutes } from "../generated/routerConfig.js";
+import openApiRouterConfig from "../generated/routerConfig.generated.json" assert { type: "json" };
 import { handlersByOperationId } from "./index.js";
 import { badRequest, internalError, notFound } from "../presentation/Responses.js";
 import { toApiGatewayHttpV2Response as toApiGatewayResult } from "../presentation/adapters.js";
@@ -22,38 +22,71 @@ export type OperationHandler = (
 
 
 
+
+// Type for the OpenAPI-like router config
+type OpenApiRouterConfig = typeof openApiRouterConfig;
+
 export class HttpRouter {
   private handlers: Record<string, OperationHandler>;
-  private routes: typeof defaultRoutes;
+  private openApiPaths: { [path: string]: { [method: string]: Record<string, unknown> } };
 
   constructor(
     handlers: Record<string, OperationHandler> = handlersByOperationId,
-    routes: typeof defaultRoutes = defaultRoutes
+    openApiPaths: OpenApiRouterConfig["openapi"]["paths"] = openApiRouterConfig.openapi.paths
   ) {
     this.handlers = handlers;
-    this.routes = routes;
+    this.openApiPaths = openApiPaths;
   }
 
-  private findRoute(method: string, rawPath: string) {
-    return this.routes.find(
-      (r) => r.method === method && r.pathRegex.test(rawPath)
-    );
+  /**
+   * Find the OpenAPI path template and method config for a given request path and method.
+   * Returns { pathTemplate, methodConfig } or null if not found.
+   * If path exists but method does not, returns { pathTemplate, methodConfig: null }.
+   */
+  private findRoute(method: string, rawPath: string): { pathTemplate: string, methodConfig: Record<string, unknown> } | { pathTemplate: string, methodConfig: null } | null {
+    // Try to match the rawPath to a path template in openApiPaths
+    for (const pathTemplate in this.openApiPaths) {
+      // Convert OpenAPI path template to express style for matching
+      const expressStylePath = pathTemplate.replace(/{/g, ":").replace(/}/g, "");
+      const matcher = match<Record<string, string>>(expressStylePath, { decode: decodeURIComponent });
+      const result = matcher(rawPath);
+      if (result) {
+        // Path matches, now check for method
+        const methodConfig = this.openApiPaths[pathTemplate][method.toLowerCase()];
+        if (methodConfig) {
+          return { pathTemplate, methodConfig };
+        } else {
+          // Path exists but method does not
+          return { pathTemplate, methodConfig: null };
+        }
+      }
+    }
+    // No path match
+    return null;
   }
 
   public async lambdaHandler(event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> {
     const method = event.requestContext.http.method.toUpperCase();
     const rawPath = event.rawPath || "/";
 
-    // 1) Find matching route from injected or default routerConfig
-    const route = this.findRoute(method, rawPath);
-    if (!route) {
+    // 1) Find matching route from OpenAPI routerConfig
+    const routeResult = this.findRoute(method, rawPath);
+    if (!routeResult) {
+      // No path match
       return toApiGatewayResult(notFound({ message: "Not Found" }));
     }
-
+    if (routeResult.methodConfig === null) {
+      // Path exists but method does not
+      return toApiGatewayResult(notFound({ message: "Not Found" }));
+    }
+    const { pathTemplate, methodConfig } = routeResult;
     // 2) Look up the operation handler by operationId
-    const operationHandler = this.handlers[route.operationId];
+    const operationId = (methodConfig as { operationId?: string }).operationId;
+    if (!operationId) {
+      return toApiGatewayResult(internalError({ message: "Handler not implemented" }));
+    }
+    const operationHandler = this.handlers[operationId];
     if (!operationHandler) {
-      console.error(`No handler registered for operationId=${route.operationId}`);
       return toApiGatewayResult(internalError({ message: "Handler not implemented" }));
     }
 
@@ -61,24 +94,15 @@ export class HttpRouter {
     let body: unknown;
     try {
       body = this.parseBody(event);
-    } catch (err: unknown) {
-      if (isErrorWithMessage(err) && err.message === "INVALID_JSON_BODY") {
-        return toApiGatewayResult(badRequest({ message: "Malformed JSON body" }));
-      }
-      console.error("Unexpected body parse error", err);
-      return toApiGatewayResult(internalError({ message: "Internal Server Error" }));
+
+    } catch {
+      // Only care about INVALID_JSON_BODY
+      return toApiGatewayResult(badRequest({ message: "Malformed JSON body" }));
     }
 
-    function isErrorWithMessage(e: unknown): e is { message: string } {
-      return (
-        typeof e === "object" &&
-        e !== null &&
-        Object.prototype.hasOwnProperty.call(e, "message") &&
-        typeof (e as Record<string, unknown>).message === "string"
-      );
-    }
 
-    const pathParams = this.extractPathParams(rawPath, route.rawPath);
+
+    const pathParams = this.extractPathParams(rawPath, pathTemplate);
 
     const queryParams: Record<string, string | undefined> = {
       ...(event.queryStringParameters ?? {})
@@ -94,11 +118,7 @@ export class HttpRouter {
     // 4) Invoke the operation handler with proper error wrapping
     try {
       return await operationHandler(ctx);
-    } catch (err) {
-      console.error(
-        `Unhandled error in operationId=${route.operationId}`,
-        err
-      );
+    } catch {
       return toApiGatewayResult(internalError({ message: "Internal Server Error" }));
     }
   }
@@ -108,30 +128,20 @@ export class HttpRouter {
     openApiPath: string
   ): Record<string, string> {
     // If the path uses a wildcard like "/*", there are no named params
-    // and path-to-regexp will throw
     if (openApiPath.includes("*")) {
       return {};
     }
-
     const expressStylePath = openApiPath.replace(/{/g, ":").replace(/}/g, "");
     try {
       const matcher = match<Record<string, string>>(expressStylePath, {
         decode: decodeURIComponent
       });
-
       const result = matcher(rawPath);
-
       if (!result) {
-        // No match, no params
         return {};
       }
-
       return result.params;
-    } catch (err) {
-      console.error(
-        `Error extracting path params for rawPath=${rawPath} openApiPath=${openApiPath}`,
-        err
-      );
+    } catch {
       return {};
     }
   }

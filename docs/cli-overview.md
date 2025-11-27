@@ -6,19 +6,25 @@ The `spec2lambda` CLI is the entry point for building, evolving, and maintaining
 
 ### Usage
 
+
 ```sh
 spec2lambda init <project-name>
 spec2lambda create-lambda-function <project-name> # alias for init
-spec2lambda generate --config spec2lambda.config.mts
+spec2lambda generate [--config <file>] [--dry-run] [--verbose]
 ```
 
 ### Commands
 
+
 - `init` / `create-lambda-function` - Scaffold a new Lambda service project
-- `generate` - Run codegen based on the OpenAPI spec *(currently stubbed, not implemented)*
+- `generate` - Run codegen based on the OpenAPI spec and config. Supports:
+	- `--config <file>`: Specify a config file (YAML/JSON, autodetected if omitted)
+	- `--dry-run`: Show intended file writes and diffs, but do not write files
+	- `--verbose`/`-v`: Show extra diagnostic output
 - `--help`/`-h` - Shows usage information
 
-These commands provide a foundation for future development. Use `npm run cli -- <command>` for local development.
+
+These commands provide a foundation for future development. Use `npx spec2lambda <command>` or `npm run cli -- <command>` for local development.
 
 ## Philosophy: Template + Generator
 - **Template**: Provides a ready-to-extend TypeScript service structure, with clear boundaries between user code and generated artifacts.
@@ -27,7 +33,7 @@ These commands provide a foundation for future development. Use `npm run cli -- 
 ## Lifecycle Overview
 1. **init**: Scaffold a new project structure and initial OpenAPI spec.
 2. **edit spec**: Evolve your API by editing `api/openapi.yml`.
-3. **generate**: Generate types, validators, and router config from the spec. All generated files are always safe to overwrite.
+3. **generate**: Generate types, validators, and router config from the spec. All generated files are always safe to overwrite. The generator supports YAML/JSON config autodetection, dry-run mode, and logs file diffs for safe review.
 4. **develop/iterate**: Implement handlers, run the local dev server, and test your API.
 
 ## Regeneration Safety
@@ -35,6 +41,7 @@ These commands provide a foundation for future development. Use `npm run cli -- 
 - Handler stubs are (re)generated as needed in grouped files (e.g., `src/handlers/users.ts`), but user-implemented logic in existing handler functions is preserved.
 - The `init` command also sets up the HTTP presentation layer, including adapters required for Lambda HTTP API Gateway responses, so you can focus on business logic.
 - User code (handlers, adapters, presentation logic) lives outside generated folders and is never touched by codegen, except for safe handler stubbing.
+- The `generate` command supports dry-run mode, config autodetection, and logs file diffs for safe review before making changes.
 
 ## Next Steps
 - See [commands.md](./commands.md) for CLI usage.
