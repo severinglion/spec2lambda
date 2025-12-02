@@ -29,8 +29,18 @@ describe('initProject', () => {
     fsMock = {
       existsSync: (p: string) => files[p] !== undefined || mkdirs.includes(p),
       mkdirSync: (p: string) => { mkdirs.push(p); },
-      readFileSync: (p: string) => files[p],
-      writeFileSync: (p: string, c: string) => { files[p] = c; writeCalls.push({ path: p, content: c }); },
+      readFileSync: (p: string) => {
+        if (files[p] !== undefined) return files[p];
+        const normP = p.replace(/\\/g, '/');
+        const match = Object.keys(files).find(k => normP.endsWith(k.replace(/\\/g, '/')));
+        if (match) return files[match];
+        throw new Error(`File not found in mock: ${p}`);
+      },
+      writeFileSync: (p: string, c: string) => {
+        const norm = p.replace(/\\/g, '/');
+        files[norm] = c;
+        writeCalls.push({ path: norm, content: c });
+      },
     };
     loggerMock = { info: (msg: string) => logs.push(msg), error: (msg: string) => logs.push('ERR:' + msg) };
   });
@@ -40,8 +50,9 @@ describe('initProject', () => {
     expect(created).toContain(`${root}/package.json`);
     expect(created).toContain(`${root}/src/handlers/testHandler.ts`);
     expect(created).toContain(`${root}/src/presentation/testPresentation.ts`);
-    expect(files[`${root}/src/handlers/testHandler.ts`]).toBe('// handler template');
-    expect(files[`${root}/src/presentation/testPresentation.ts`]).toBe('// presentation template');
+    const norm = (p: string) => p.replace(/\\/g, '/');
+    expect(files[norm(`${root}/src/handlers/testHandler.ts`)]).toBe('// handler template');
+    expect(files[norm(`${root}/src/presentation/testPresentation.ts`)]).toBe('// presentation template');
     expect(logs).toContain(`Created: ${root}/src/handlers/testHandler.ts`);
     expect(logs).toContain(`Created: ${root}/src/presentation/testPresentation.ts`);
     // Check that package.json was written with correct name and script

@@ -313,7 +313,7 @@ export async function writeGeneratedFiles(
     let newFileContent = fileContent;
     let addedAny = false;
     // Ensure import for Handler type at the top
-    const importLine = `import type { Handler } from './HandlerTypes';\n`;
+    const importLine = `import type { Handler } from './HandlerTypes.js';\n`;
     if (!fileContent.startsWith(importLine)) {
       newFileContent = importLine + (newFileContent.startsWith('\n') ? newFileContent.slice(1) : newFileContent);
       addedAny = true;

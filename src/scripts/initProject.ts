@@ -1,3 +1,5 @@
+import { fileURLToPath } from "url";
+import { dirname, resolve } from "path";
 // Manifest-driven project initializer for Lambda function scaffolding
 // All dependencies are injected for testability
 
@@ -33,6 +35,7 @@ export function initProject(
   }
   fs.mkdirSync(rootFolder, { recursive: true });
   const created: string[] = [];
+  const projectRoot = dirname(fileURLToPath(import.meta.url));
   // Generate package.json
   const pkg = {
     name: rootFolder,
@@ -41,6 +44,7 @@ export function initProject(
     scripts: {
       codegen: "spec2lambda generate --config spec2lambda.config.mts"
     },
+    type: "module",
     devDependencies: {
       spec2lambda: "latest"
     }
@@ -62,7 +66,8 @@ export function initProject(
     if (dir && !fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    const content = fs.readFileSync(entry.source);
+    const sourcePath = resolve(projectRoot, "../../", entry.source);
+    const content = fs.readFileSync(sourcePath);
     fs.writeFileSync(outPath, content);
     created.push(outPath);
     logger?.info?.(`Created: ${outPath}`);
