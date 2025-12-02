@@ -1,6 +1,10 @@
+# [spec2lambda](https://www.npmjs.com/package/spec2lambda)
 
+[![npm version](https://img.shields.io/npm/v/spec2lambda)](https://www.npmjs.com/package/spec2lambda)
+[![npm downloads](https://img.shields.io/npm/dm/spec2lambda)](https://www.npmjs.com/package/spec2lambda)
+[![GitHub Repo](https://img.shields.io/badge/GitHub-Repository-blue)](https://github.com/severinglion/spec2lambda)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-# spec2lambda
 
 **spec2lambda** is an opinionated, spec-driven code generation tool for building scalable AWS Lambda APIs in TypeScript. It enforces a clear project structure and automates type-safe handler scaffolding, all powered by your OpenAPI spec.
 
