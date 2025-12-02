@@ -40,15 +40,10 @@
     "@types/swagger-ui-express": "^4.1.8",
     "@typescript-eslint/eslint-plugin": "^8.48.0",
     "@typescript-eslint/parser": "^8.48.0",
-    "body-parser": "^2.2.0",
     "eslint": "^9.39.1",
-    "express": "^5.1.0",
     "globals": "^16.5.0",
     "jiti": "^2.6.1",
-    "js-yaml": "^4.1.1",
     "openapi-typescript": "^7.10.1",
-    "orval": "^8.0.0-rc.2",
-    "path-to-regexp": "^8.3.0",
     "swagger-ui-express": "^5.0.1",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
@@ -56,11 +51,19 @@
     "tsx": "^4.20.6",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.48.0",
-    "vitest": "^3.2.4",
-    "zod": "^4.1.12"
+    "vitest": "^3.2.4"
   },
   "dependencies": {
-    "diff": "^8.0.2"
+    "aws-lambda": "^1.0.7",
+    "body-parser": "^2.2.0",
+    "diff": "^8.0.2",
+    "express": "^5.1.0",
+    "js-yaml": "^4.1.1",
+    "orval": "^7.17.0",
+    "path-to-regexp": "^8.3.0",
+    "swagger-ui-express": "^5.0.1",
+    "yaml": "^2.8.2",
+    "zod": "^4.1.12"
   },
   "files": [
     "dist",

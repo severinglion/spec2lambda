@@ -32,17 +32,64 @@ export function initProject(
     version: "1.0.0",
     private: true,
     scripts: {
-      codegen: "spec2lambda generate"
+      codegen: "spec2lambda generate",
+      "codegen:types": "openapi-typescript ./api/openapi.yml -o ./src/generated/openapi.types.ts",
+      "codegen:zod": "orval --config orval.config.cjs",
+      "codegen:contracts": "npm run codegen:types && npm run codegen:zod"
     },
     type: "module",
     devDependencies: {
-      spec2lambda: "latest"
+      spec2lambda: "latest",
+      "openapi-typescript": "^7.10.1",
+      "orval": "^7.17.0"
     }
   };
   const pkgPath = `${rootFolder}/package.json`;
   fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");
   created.push(pkgPath);
   logger?.info?.(`Created: ${pkgPath}`);
+
+  // Add .gitignore file from array of lines
+  const gitignoreLines = [
+    'node_modules/',
+    'src/generated/',
+    '.vscode/',
+    '.env',
+    '.env.local',
+    '',
+    '# OS-specific files',
+    '.DS_Store',
+    'Thumbs.db',
+    '',
+    '# Log files',
+    'npm-debug.log*',
+    'yarn-debug.log*',
+    'yarn-error.log*',
+    '',
+    '# Build artifacts',
+    'dist/',
+    'build/',
+    'coverage/',
+    '',
+    '# Test output',
+    '*.lcov',
+    '',
+    '# IDE/editor files',
+    '.idea/',
+    '.history/',
+    '',
+    '# Misc',
+    '*.tgz',
+    '*.swp',
+    '*.swo',
+    '',
+    '# Test output',
+    'test-project/'
+  ];
+  const gitignorePath = `${rootFolder}/.gitignore`;
+  fs.writeFileSync(gitignorePath, gitignoreLines.join('\n'));
+  created.push(gitignorePath);
+  logger?.info?.(`Created: ${gitignorePath}`);
 
   // Always resolve dist/starter-template relative to the actual package location
   const starterTemplateRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../dist/starter-template");

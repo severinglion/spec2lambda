@@ -45,8 +45,8 @@ export const defaultManifest: Manifest = [
     source: "tsconfig.json",
   },
   {
-    path: ".gitignore",
-    source: ".gitignore",
+    path: "orval.config.cjs",
+    source: "orval.config.cjs",
   },
 ];
 
