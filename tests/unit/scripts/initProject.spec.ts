@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+import path from 'path';
 import { initProject, Manifest } from '../../../src/scripts/initProject';
 import { describe, it, expect, beforeEach } from 'vitest';
 
@@ -19,20 +20,26 @@ describe('initProject', () => {
 
   let writeCalls: Array<{ path: string, content: string }>;
   beforeEach(() => {
-    files = {
-      'template/handler.ts': '// handler template',
-      'template/presentation.ts': '// presentation template',
-    };
+    // Use absolute paths to match implementation
+    const starterTemplateRoot = path.resolve(__dirname, '../../../dist/starter-template');
+    files = {};
+    manifest.forEach(entry => {
+      const absPath = path.resolve(starterTemplateRoot, entry.path);
+      files[absPath] = entry.path.includes('handler') ? '// handler template' : '// presentation template';
+    });
     mkdirs = [];
     logs = [];
     writeCalls = [];
     fsMock = {
-      existsSync: (p: string) => files[p] !== undefined || mkdirs.includes(p),
-      mkdirSync: (p: string) => { mkdirs.push(p); },
-      readFileSync: (p: string) => {
-        if (files[p] !== undefined) return files[p];
+      existsSync: (p: string) => {
+        // Normalize for starter template source
         const normP = p.replace(/\\/g, '/');
-        const match = Object.keys(files).find(k => normP.endsWith(k.replace(/\\/g, '/')));
+        return Object.keys(files).some(k => k.replace(/\\/g, '/').toLowerCase() === normP.toLowerCase()) || mkdirs.includes(normP);
+      },
+      mkdirSync: (p: string) => { mkdirs.push(p.replace(/\\/g, '/')); },
+      readFileSync: (p: string) => {
+        const normP = p.replace(/\\/g, '/');
+        const match = Object.keys(files).find(k => k.replace(/\\/g, '/').toLowerCase() === normP.toLowerCase());
         if (match) return files[match];
         throw new Error(`File not found in mock: ${p}`);
       },
