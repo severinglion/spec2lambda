@@ -6,6 +6,7 @@ import { runGenerateCLI } from "./runGenerateCLI.js";
 import * as fs from "fs";
 import { realpathSync } from "fs";
 import { normalize, resolve } from "path";
+import { logger } from './presentation/logger.js';
 
 
 export class Cli {
@@ -18,11 +19,24 @@ export class Cli {
     readFileSync: (path: string) => fs.readFileSync(path, 'utf8'),
     writeFileSync: (path: string, content: string) => fs.writeFileSync(path, content, 'utf8'),
   };
-  logger = console;
+  logger = logger;
 
   run(argv: string[] = process.argv.slice(2)) {
     const [command, ...args] = argv;
     switch (command) {
+      case "--version":
+      case "version": {
+        // Read version from package.json (ESM compatible)
+        try {
+          const pkgPath = resolve(fileURLToPath(import.meta.url), '../../package.json');
+          const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+          this.logger.info(pkg.version);
+        } catch (e) {
+          this.logger.error('Could not read version:', e);
+          process.exitCode = 1;
+        }
+        break;
+      }
       case "init":
       case "create-lambda-function": {
         const projectName = args[0];
@@ -46,7 +60,7 @@ export class Cli {
       }
       case "generate": {
         // Use the new runGenerateCLI for dependency-injected, robust codegen
-        runGenerateCLI(args).catch((err) => {
+        runGenerateCLI(args, this.logger).catch((err) => {
           this.logger.error("[spec2lambda] Code generation failed:", err);
           process.exitCode = 1;
         });
