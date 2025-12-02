@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/severinglion/spec2lambda/compare/v1.0.0...v1.1.0) (2025-12-02)
+
+
+### Features
+
+* add code generation step to release workflow ([fa8c930](https://github.com/severinglion/spec2lambda/commit/fa8c9300a9202be86962b8099b6aee57f0ff9471))
+
 ## 1.0.0 (2025-12-02)
 
 
