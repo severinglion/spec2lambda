@@ -2,11 +2,6 @@ import { fileURLToPath } from "url";
 import { dirname, resolve } from "path";
 import { Manifest } from "./packageTemplate.js";
 export type { Manifest };
-// Manifest-driven project initializer for Lambda function scaffolding
-// All dependencies are injected for testability
-
-
-// ...existing code...
 
 export interface InitProjectDeps {
   fs: {
@@ -37,7 +32,7 @@ export function initProject(
     version: "1.0.0",
     private: true,
     scripts: {
-      codegen: "spec2lambda generate --config spec2lambda.config.mts"
+      codegen: "spec2lambda generate"
     },
     type: "module",
     devDependencies: {

@@ -13,8 +13,8 @@ spec2lambda create-lambda-function <project-name> # alias for init
 spec2lambda generate [--config <file>] [--dry-run] [--verbose]
 ```
 
-### Commands
 
+### Commands
 
 - `init` / `create-lambda-function` - Scaffold a new Lambda service project
 - `generate` - Run codegen based on the OpenAPI spec and config. Supports:
@@ -22,6 +22,7 @@ spec2lambda generate [--config <file>] [--dry-run] [--verbose]
 	- `--dry-run`: Show intended file writes and diffs, but do not write files
 	- `--verbose`/`-v`: Show extra diagnostic output
 - `--help`/`-h` - Shows usage information
+- `--version`/`-v` - Shows the current CLI version
 
 
 These commands provide a foundation for future development. Use `npx spec2lambda <command>` or `npm run cli -- <command>` for local development.

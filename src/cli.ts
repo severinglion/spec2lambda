@@ -8,6 +8,80 @@ import { realpathSync } from "fs";
 import { normalize, resolve } from "path";
 import { logger } from './presentation/logger.js';
 
+const CLI_DEFS = {
+  usage: [
+    'spec2lambda init <project-name>',
+    'spec2lambda generate [--config <file>] [--dry-run] [--verbose]',
+    'spec2lambda --help | -h',
+    'spec2lambda --version | -v | version',
+  ],
+  commands: [
+    {
+      names: ['init', 'create-lambda-function'],
+      desc: 'Scaffold a new Lambda service project',
+    },
+    {
+      names: ['generate'],
+      desc: 'Run codegen based on the OpenAPI spec',
+    },
+    {
+      names: ['--help', '-h'],
+      desc: 'Show usage information',
+    },
+    {
+      names: ['--version', '-v', 'version'],
+      desc: 'Show the current CLI version',
+    },
+  ],
+  options: [
+    {
+      for: 'generate',
+      opts: [
+        {
+          flag: '--config <file>',
+          desc: 'Specify config file (YAML/JSON, autodetected if omitted)',
+        },
+        {
+          flag: '--dry-run',
+          desc: 'Show intended file writes and diffs, but do not write files',
+        },
+        {
+          flag: '--verbose, -v',
+          desc: 'Show extra diagnostic output',
+        },
+      ],
+    },
+  ],
+  notes: [
+    'The existing local-dev server is still used separately (e.g., npm run dev).',
+    'All files in src/generated/ are always overwritten by codegen. Never edit these directly.',
+    'Handler stubs are (re)generated as needed, but your handler logic is preserved.',
+  ],
+};
+
+function renderHelp() {
+  let out = 'spec2lambda - CLI\n\nUsage:';
+  for (const line of CLI_DEFS.usage) {
+    out += `\n  ${line}`;
+  }
+  out += '\n\nCommands:';
+  for (const cmd of CLI_DEFS.commands) {
+    const names = cmd.names.join(', ');
+    out += `\n  ${names.padEnd(28)}${cmd.desc}`;
+  }
+  for (const optGroup of CLI_DEFS.options) {
+    out += `\n\nOptions for '${optGroup.for}':`;
+    for (const opt of optGroup.opts) {
+      out += `\n  ${opt.flag.padEnd(16)}${opt.desc}`;
+    }
+  }
+  out += '\n\nNotes:';
+  for (const note of CLI_DEFS.notes) {
+    out += `\n- ${note}`;
+  }
+  return out + '\n';
+}
+
 
 export class Cli {
   initProject = initProject;
@@ -24,9 +98,9 @@ export class Cli {
   run(argv: string[] = process.argv.slice(2)) {
     const [command, ...args] = argv;
     switch (command) {
+      case "-v":
       case "--version":
       case "version": {
-        // Read version from package.json (ESM compatible)
         try {
           const pkgPath = resolve(fileURLToPath(import.meta.url), '../../package.json');
           const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
@@ -68,11 +142,11 @@ export class Cli {
       }
       case "--help":
       case "-h":
-        this.logger.info(`spec2lambda - CLI\n\nUsage:\n  spec2lambda init <project-name>\n  spec2lambda generate [--config <file>] [--dry-run] [--verbose]\n\nCommands:\n  init         Scaffold a new Lambda service\n  generate     Run codegen based on the OpenAPI spec\n\nOptions for 'generate':\n  --config <file>   Specify config file (YAML/JSON, autodetected if omitted)\n  --dry-run        Show intended file writes and diffs, but do not write files\n  --verbose, -v    Show extra diagnostic output\n\nNote:\n  The existing local-dev server is still used separately (e.g., npm run dev).\n`);
+        this.logger.info(renderHelp());
         break;
       default:
         this.logger.info(`Unknown command: ${command}`);
-        this.logger.info(`spec2lambda - CLI\n\nUsage:\n  spec2lambda init <project-name>\n  spec2lambda generate [--config <file>] [--dry-run] [--verbose]\n\nCommands:\n  init         Scaffold a new Lambda service\n  generate     Run codegen based on the OpenAPI spec\n\nOptions for 'generate':\n  --config <file>   Specify config file (YAML/JSON, autodetected if omitted)\n  --dry-run        Show intended file writes and diffs, but do not write files\n  --verbose, -v    Show extra diagnostic output\n\nNote:\n  The existing local-dev server is still used separately (e.g., npm run dev).\n`);
+        this.logger.info(renderHelp());
         process.exitCode = 1;
     }
   }
