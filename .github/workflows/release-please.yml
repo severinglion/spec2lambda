@@ -2,7 +2,7 @@ name: release-please
 
 on:
   workflow_run:
-    workflows: ["ci"]           # The name of your CI workflow
+    workflows: ["CI"]           # The name of your CI workflow
     types:
       - completed
 
