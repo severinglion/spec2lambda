@@ -17,11 +17,9 @@ jobs:
     steps:
       - name: Release Please
         id: release
-        uses: google-github-actions/release-please-action@v4
+        uses: googleapis/release-please-action@v4
         with:
           release-type: node
-          package-name: spec2lambda
-          token: ${{ secrets.GITHUB_TOKEN }} # or just omit, GITHUB_TOKEN is default
 
       # Only do the npm publish flow if a release was actually created
       - name: Checkout repo at release commit
