@@ -61,5 +61,10 @@
   },
   "dependencies": {
     "diff": "^8.0.2"
-  }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ]
 }
