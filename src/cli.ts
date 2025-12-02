@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { fileURLToPath } from "url";
-import { initProject, defaultManifest } from "./scripts/initProject.js";
+import { initProject } from "./scripts/initProject.js";
+import { defaultManifest } from "./scripts/packageTemplate.js";
 import { runGenerateCLI } from "./runGenerateCLI.js";
 import * as fs from "fs";
 import { realpathSync } from "fs";
@@ -62,7 +63,7 @@ export class Cli {
     }
   }
 }
-function isMainModule(): boolean {
+export function isMainModule(): boolean {
   try {
     const modulePath = normalize(realpathSync(fileURLToPath(import.meta.url)));
     if (!process.argv[1]) return false;

@@ -9,13 +9,14 @@
   },
   "scripts": {
     "cli": "tsx src/cli.ts",
+    "build:template": "tsx src/scripts/packageTemplate.ts",
     "codegen": "npm run cli -- generate",
     "codegen:types": "openapi-typescript ./api/openapi.yml -o ./src/generated/openapi.types.ts",
     "codegen:zod": "orval --config orval.config.cjs",
     "codegen:contracts": "npm run codegen:types && npm run codegen:zod",
     "test": "vitest --run",
     "typecheck": "tsc --noEmit",
-    "build": "tsc",
+    "build": "tsc && npm run build:template",
     "lint": "eslint . --ext .ts,.js,.cjs,.mjs"
   },
   "repository": {
