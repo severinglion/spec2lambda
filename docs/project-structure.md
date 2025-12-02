@@ -1,6 +1,10 @@
+
 # Project Structure
 
 This document explains the layout of a `spec2lambda`-based service, the role of each directory, and which files are user-owned vs. generated.
+
+## Opinionated, Spec-Driven Structure
+`spec2lambda` enforces an opinionated project structure for scalable, maintainable Lambda APIs. All code generation is driven by your OpenAPI spec.
 
 ## Directory Map
 
@@ -20,9 +24,9 @@ This document explains the layout of a `spec2lambda`-based service, the role of 
 - Responses are helpers for common HTTP patterns (ok, notFound, badRequest, etc.), and can be extended as needed.
 
 ## Example Workflow
-1. Run `spec2lambda init <project-name>` to scaffold a new project and set the name.
+1. Run `npx spec2lambda init <project-name>` to scaffold a new project and set the name.
 2. Edit `api/openapi.yml` to define or update endpoints.
-3. Run `spec2lambda generate` to regenerate types, schemas, routes, and grouped handler stubs (e.g., all user operations in `src/handlers/users.ts`).
+3. Run `npm run generate` in the generated project to regenerate types, schemas, routes, and grouped handler stubs (e.g., all user operations in `src/handlers/users.ts`).
 4. Implement business logic in grouped handler files. Handlers are auto-wired to the framework by operationId.
 5. Use adapters and responses to shape output.
 6. Test and iterate.

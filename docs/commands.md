@@ -34,6 +34,7 @@ spec2lambda generate --config spec2lambda.config.mts
 - Intended to parse the OpenAPI spec and generate types, schemas, routes, and handler stubs.
 - Currently prints a placeholder message and does not perform real work.
 
+
 ## help
 
 Show usage information for the CLI.
@@ -43,4 +44,15 @@ Show usage information for the CLI.
 ```sh
 spec2lambda --help
 spec2lambda -h
+```
+
+## version
+
+Show the current version of the CLI.
+
+**Usage:**
+
+```sh
+spec2lambda --version
+spec2lambda -v
 ```
