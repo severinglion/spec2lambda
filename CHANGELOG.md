@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.2](https://github.com/severinglion/spec2lambda/compare/v1.1.1...v1.1.2) (2025-12-02)
+
+
+### Bug Fixes
+
+* update package dependencies and add new scripts ([8740269](https://github.com/severinglion/spec2lambda/commit/874026939b1d6c524fa110cdf83dc72ba4a08d15))
+* update package dependencies and add new scripts ([eaa938c](https://github.com/severinglion/spec2lambda/commit/eaa938c554f177294685b86560fde21e0ce81700))
+
 ## [1.1.1](https://github.com/severinglion/spec2lambda/compare/v1.1.0...v1.1.1) (2025-12-02)
 
 
