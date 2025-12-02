@@ -1,6 +1,6 @@
 {
   "name": "spec2lambda",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A TypeScript template for building spec-driven AWS Lambda APIs using OpenAPI, code generation, modular handlers, and a local dev server.",
   "main": "dist/index.js",
   "type": "module",

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/severinglion/spec2lambda/compare/v1.1.0...v1.1.1) (2025-12-02)
+
+
+### Bug Fixes
+
+* update README to include badges for npm version, downloads, GitHub repo, and license ([5488c43](https://github.com/severinglion/spec2lambda/commit/5488c43beeafc0306b3f5f2a45c205074c4a0e32))
+
 ## [1.1.0](https://github.com/severinglion/spec2lambda/compare/v1.0.0...v1.1.0) (2025-12-02)
 
 
