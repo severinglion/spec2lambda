@@ -1,6 +1,7 @@
 import { fileURLToPath } from "url";
 import * as fs from "fs";
 import * as path from "path";
+import { logger } from '../presentation/logger.js';
 export interface ManifestEntry {
   /** Output path for the copied file */
   path: string;
@@ -53,7 +54,7 @@ export const defaultManifest: Manifest = [
 export interface PackageTemplateDeps {
   fs: typeof fs;
   path: typeof path;
-  logger?: { info: (msg: string) => void; error: (msg: string) => void };
+  logger?: { info: (...args: unknown[]) => void; error: (...args: unknown[]) => void; debug?: (...args: unknown[]) => void };
 }
 
 /**
@@ -64,7 +65,7 @@ export function copyStarterTemplate(
   deps: PackageTemplateDeps = {
     fs,
     path,
-    logger: console,
+    logger: logger,
   }
 ) {
   const { fs, path, logger } = deps;
@@ -75,9 +76,9 @@ export function copyStarterTemplate(
 
   if (!fs.existsSync(destRoot)) {
     fs.mkdirSync(destRoot, { recursive: true });
-    logger?.info?.(`[packageTemplate] Created destination root: ${destRoot}`);
+    logger?.debug?.(`[packageTemplate] Created destination root: ${destRoot}`);
   } else {
-    logger?.info?.(`[packageTemplate] Destination root already exists: ${destRoot}`);
+    logger?.debug?.(`[packageTemplate] Destination root already exists: ${destRoot}`);
   }
 
   for (const entry of manifest) {
@@ -85,7 +86,7 @@ export function copyStarterTemplate(
     const destDir = path.dirname(destPath);
     if (!fs.existsSync(destDir)) {
       fs.mkdirSync(destDir, { recursive: true });
-      logger?.info?.(`[packageTemplate] Created directory: ${destDir}`);
+      logger?.debug?.(`[packageTemplate] Created directory: ${destDir}`);
     }
     const sourcePath = path.resolve(projectRoot, "../../", entry.source);
     if (!fs.existsSync(sourcePath)) {
@@ -93,9 +94,10 @@ export function copyStarterTemplate(
       throw new Error(`Source file does not exist: ${sourcePath}`);
     }
     fs.copyFileSync(sourcePath, destPath);
-    logger?.info?.(`[packageTemplate] Copied: ${sourcePath} -> ${destPath}`);
+    logger?.info?.(`[packageTemplate] Copied: ${entry.source} -> ${entry.path}`);
+    logger?.debug?.(`[packageTemplate] Full copy: ${sourcePath} -> ${destPath}`);
   }
-  logger?.info?.(`[packageTemplate] Starter template successfully copied to ${destRoot}`);
+  logger?.info?.(`[packageTemplate] Starter template successfully copied to dist/starter-template`);
 }
 
 

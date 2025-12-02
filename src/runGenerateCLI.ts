@@ -22,6 +22,7 @@ function runProcess(cmd: string, args: string[], opts: Record<string, unknown>):
 }
 
 // Diff summary helper
+
 import type { Change } from "diff";
 function diffSummary(oldStr: string, newStr: string): string {
   const changes: Change[] = diffLines(oldStr, newStr);
@@ -35,7 +36,9 @@ function diffSummary(oldStr: string, newStr: string): string {
     .join("\n");
 }
 
-export async function runGenerateCLI(args: string[]) {
+import { logger } from './presentation/logger.js';
+
+export async function runGenerateCLI(args: string[], injectedLogger = logger) {
   const verbose = args.includes("--verbose") || args.includes("-v");
   const dryRun = args.includes("--dry-run");
   const configPathArg = args.find((a) => a.startsWith("--config"));
@@ -47,7 +50,7 @@ export async function runGenerateCLI(args: string[]) {
         readFileSync: (p: string, enc: BufferEncoding) => fs.readFileSync(p, { encoding: enc }),
         writeFileSync: (p: string, c: string, enc: BufferEncoding) => fs.writeFileSync(p, c, { encoding: enc }),
       },
-      logger: console,
+      logger: injectedLogger,
       yaml: jsYaml,
       processRunner: runProcess,
       diff: diffSummary,
