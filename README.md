@@ -122,18 +122,17 @@ npx spec2lambda -v
 ## Typical Workflow
 1. **Initialize the project**
    - Run: `npx spec2lambda init <project-name>`
+   - Navigate into the project: `cd <project-name>`
+   - Install dependencies: `npm install`
 2. **Edit the OpenAPI spec**
    - Edit `api/openapi.yml` to add or update endpoints.
    - Set a unique `operationId` for each operation.
 3. **Generate code**
-   - Run: `npm run generate`
+   - Run: `npm run codegen`
    - Updates all generated types, schemas, router config, and handler stubs (grouped by resource, e.g., `users.ts`).
 4. **Implement business logic**
    - Fill in handler stubs in `src/handlers/`.
    - Use adapters and responses from `src/presentation/`.
-5. **Test and iterate**
-   - Add or update tests in `tests/`.
-   - Use the local dev server for manual testing.
 
 ---
 
@@ -154,28 +153,6 @@ See [`docs/project-structure.md`](./docs/project-structure.md) for directory rol
 ### (Optional) Infra Layer (`src/infra/`)
 - Implementation of repositories and clients (e.g., DynamoDB, S3, external APIs).
 - Configuration loading and service wiring.
-
----
-
-## Local Development
-- Entry point: `local-dev/dev-server.ts`.
-- Uses the generated router config and grouped handlers.
-- Uses the same handler functions as Lambda.
-- Typical workflow:
-  - Run `npm run generate` after editing the spec.
-  - Start the dev server (see future CLI support).
-  - Hit `http://localhost:<PORT>/<your-path>` using a tool like Postman or curl.
-
----
-
-## Testing
-- Place tests under `tests/`.
-- Suggested patterns:
-  - **Unit tests** for domain logic (`src/domain/`).
-  - **Integration tests** for handlers:
-    - Invoke handlers directly with fake events, or
-    - Use the dev server and make HTTP calls.
-- Keep tests decoupled from actual AWS services by using mocks or local test doubles.
 
 ---
 
