@@ -1,9 +1,8 @@
-// NOTE: Requires 'js-yaml' and 'diff' packages (npm install js-yaml diff)
 import * as jsYaml from "js-yaml";
 import * as fs from "fs";
 import { spawn } from "child_process";
 import { diffLines } from "diff";
-import { generate } from "./scripts/generate";
+import { generate } from "./scripts/generate.js";
 
 // Helper to promisify child_process spawn for processRunner
 function runProcess(cmd: string, args: string[], opts: Record<string, unknown>): Promise<{ stdout: string; stderr: string; code: number }> {

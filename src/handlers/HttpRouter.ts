@@ -1,16 +1,16 @@
-import defaultSchemaMap from '../generated/schemaMap.generated.json' assert { type: 'json' };
+import defaultSchemaMap from '../generated/schemaMap.generated.json' with { type: 'json' };
 import * as defaultSchemas from '../generated/schemas.zod.js';
 import type {
   APIGatewayProxyEventV2,
   APIGatewayProxyResultV2
 } from "aws-lambda";
 import { Runner } from "./Runner.js";
-import openApiRouterConfig from "../generated/routerConfig.generated.json" assert { type: "json" };
+import openApiRouterConfig from "../generated/routerConfig.generated.json" with { type: "json" };
 import { handlersByOperationId } from "./index.js";
 import { badRequest, internalError, notFound } from "../presentation/Responses.js";
 import { toApiGatewayHttpV2Response as toApiGatewayResult } from "../presentation/adapters.js";
 import { match } from "path-to-regexp";
-import { Handler } from './HandlerTypes';
+import { Handler } from './HandlerTypes.js';
 
 export interface LambdaRequestContext {
   pathParams: Record<string, string>;

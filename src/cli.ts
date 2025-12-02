@@ -1,14 +1,15 @@
 #!/usr/bin/env node
-import { initProject, defaultManifest } from "./scripts/initProject";
-import { runGenerateCLI } from "./runGenerateCLI";
+import { fileURLToPath } from "url";
+import { initProject, defaultManifest } from "./scripts/initProject.js";
+import { runGenerateCLI } from "./runGenerateCLI.js";
 import * as fs from "fs";
+import { realpathSync } from "fs";
+import { normalize, resolve } from "path";
 
 
 export class Cli {
-  // Handlers can be overridden for testing
   initProject = initProject;
   manifest = defaultManifest;
-  // generate = generate; // Not used directly anymore
   // Adapter to match the expected fs interface
   fs = {
     existsSync: fs.existsSync,
@@ -61,8 +62,17 @@ export class Cli {
     }
   }
 }
-
-// Default CLI run
-if (require.main === module) {
+function isMainModule(): boolean {
+  try {
+    const modulePath = normalize(realpathSync(fileURLToPath(import.meta.url)));
+    if (!process.argv[1]) return false;
+    const argvPath = normalize(realpathSync(resolve(process.argv[1])));
+    return modulePath === argvPath;
+  } catch {
+    return false;
+  }
+}
+const isEntry = isMainModule();
+if (isEntry) {
   new Cli().run();
 }
