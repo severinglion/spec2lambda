@@ -44,6 +44,10 @@ jobs:
         if: steps.release.outputs.release_created == 'true'
         run: npm ci
 
+      - name: Generate required code
+        if: steps.release.outputs.release_created == 'true'
+        run: npm run codegen
+
       - name: Build
         if: steps.release.outputs.release_created == 'true'
         run: npm run build
